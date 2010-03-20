@@ -25,13 +25,14 @@ in any standard linux distribution (and Guadalnex!)
 import random
 import pygame
 from pygame.locals import *
+import os,sys
 
 import elements
 from elements import Elements
 from elements import box2d
 
 class XOlympicsGame:
-    def __init__(self,screen):
+    def __init__(self,screen,balls):
         self.rightscore = self.leftscore = 0
         self.forcespeed = 75
         self.jumpforce = 20
@@ -44,6 +45,7 @@ class XOlympicsGame:
         self.rightRPress = False
         self.rightJump = False
         self.updateList = []
+        self.balls=balls
 
         self.screen = screen
         # get everything set up
@@ -78,14 +80,17 @@ class XOlympicsGame:
         return (r,255,b)
 
     def run(self):
-        self.running = True    
-        while self.running:
+
+        remainingBalls=self.balls
+
+        while remainingBalls > 0:
 
             for event in pygame.event.get():
                 if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
-                    self.running = False
-
-                if (event.type == KEYDOWN and (event.key == K_x)):
+                    remainingBalls=0
+		    break;
+ 
+                if (event.type == KEYDOWN and (event.key == K_SPACE)):
                   self.show_score()
 
                 if (event.type == KEYDOWN and (event.key == K_a or event.key == K_KP4)):
@@ -147,12 +152,17 @@ class XOlympicsGame:
 #                self.world.world.DestroyBody(self.ball)
                 self.ball = self.world.add.ball((400, 0), 50)
                 self.show_score()
+                remainingBalls-=1
             elif self.ball.GetWorldCenter().x > 7.2:
                 self.rightscore += 1
                 color=self.get_random_color()
                 self.world.set_color(color)
                 self.ball = self.world.add.ball((400, 0), 50)
                 self.show_score()
+                remainingBalls-=1
+
+            if remainingBalls == 0:
+              break
 
             self.screen.fill((255,255,255)) 
             # Update & Draw World
@@ -171,18 +181,50 @@ class XOlympicsGame:
             self.screen.blit(text, (400-width/2,20))
             pygame.display.flip();
             pygame.time.delay(2000)
-                                                              
+                                         
+    def show_splash(self,file,seconds):
+      splash=load_imagefile(file)
+      self.screen.blit(splash, (0, 0))
+      pygame.display.flip()
+
+      for n in range(seconds):
+        for event in pygame.event.get():
+          if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
+            sys.exit()
+          if (event.type == KEYDOWN and (event.key == K_SPACE)):
+            self.show_score()
+        pygame.time.delay(1000)           
+
+def load_imagefile(name):
+      fullname = os.path.join('images', name)
+      try:
+        image = pygame.image.load(fullname)
+      except pygame.error, message:
+        print 'Cannot load image:', name
+        raise SystemExit, message
+      image = image.convert()
+      return image
+
+
 
 def main():
     pygame.init()
     pygame.display.init()
-    screen = pygame.display.set_mode((800,600),pygame.FULLSCREEN)
+#    screen = pygame.display.set_mode((800,600),pygame.FULLSCREEN)
+    screen = pygame.display.set_mode((800,600))
 
-    # create an instance of the game
-    game = XOlympicsGame(screen) 
 
-    # start the main loop
-    game.run()
+    while True:
+      # create an instance of the game
+      game = XOlympicsGame(screen,balls=3) 
+      # show a nich splash screen for a while
+      game.show_splash("tripong_intro.png",2)
+      # show game keys
+#      game.show_splash("tripong_keys.png",3)
+      # start the main loop
+      game.run()
+      game.show_splash("tripong_end.png",2)
+
 
 # make sure that main get's called
 if __name__ == '__main__':
