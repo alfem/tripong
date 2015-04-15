@@ -28,15 +28,7 @@ Descargar
 
 Aquí está la última versión:
 
-http://forja.guadalinex.org/svn/tripong
+https://github.com/alfem/tripong/archive/master.zip
 
 
-Código fuente
-
-El código está aquí:
-
-http://forja.guadalinex.org/svn/tripong
-
-
-Buscar en el wiki
  
